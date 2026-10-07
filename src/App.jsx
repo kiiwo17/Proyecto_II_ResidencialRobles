@@ -1,48 +1,33 @@
 import React, { useState } from 'react';
-
-import Navbar from './components/Navbar';
-import Finanzas from './components/Finanzas';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginForm from './components/Auth/LoginForm';
+import DashboardLayout from './components/Layout/DashboardLayout';
+import EstadoCuenta from './components/Finanzas/EstadoCuenta';
 import Votaciones from './components/Votaciones';
 import Incidencias from './components/Incidencias';
 
-import './App.css';
-
-export default function App() {
-  const [role, setRole] = useState('Colono');
+function MainApp() {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('finanzas');
 
+  // Rutas Protegidas (HU-04): Redirección automática si no está autenticado
+  if (!isAuthenticated) {
+    return <LoginForm />;
+  }
+
   return (
-    <div className="app-container">
-      <Navbar role={role} setRole={setRole} />
+    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      {activeTab === 'finanzas' && <EstadoCuenta />}
+      {activeTab === 'votaciones' && <Votaciones />}
+      {activeTab === 'incidencias' && <Incidencias />}
+    </DashboardLayout>
+  );
+}
 
-      <div className="main-layout">
-        <aside className="sidebar">
-          <button 
-            className={`nav-btn ${activeTab === 'finanzas' ? 'active' : ''}`}
-            onClick={() => setActiveTab('finanzas')}
-          >
-            Mis Finanzas (HU-01)
-          </button>
-          <button 
-            className={`nav-btn ${activeTab === 'votaciones' ? 'active' : ''}`}
-            onClick={() => setActiveTab('votaciones')}
-          >
-            Votaciones (HU-02)
-          </button>
-          <button 
-            className={`nav-btn ${activeTab === 'incidencias' ? 'active' : ''}`}
-            onClick={() => setActiveTab('incidencias')}
-          >
-            Incidencias (HU-03)
-          </button>
-        </aside>
-
-        <main className="content-area">
-          {activeTab === 'finanzas' && <Finanzas />}
-          {activeTab === 'votaciones' && <Votaciones role={role} />}
-          {activeTab === 'incidencias' && <Incidencias />}
-        </main>
-      </div>
-    </div>
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }

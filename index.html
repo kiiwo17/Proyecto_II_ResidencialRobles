@@ -1,15 +1,1490 @@
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Residencial Los Robles - Portal Digital</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Residencial Los Robles - Sistema Único de Información</title>
+  
+  <!-- Fuentes Google: Plus Jakarta Sans & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', 'sans-serif'],
+          },
+          colors: {
+            robles: {
+              50: '#f2f8f2',
+              100: '#e1efe1',
+              200: '#c5dec5',
+              300: '#9ec49f',
+              400: '#72a474',
+              500: '#4e8550',
+              600: '#3d6c3f',
+              700: '#325634',
+              800: '#2b452c',
+              900: '#1e301f',
+              950: '#0e1a0f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18, ReactDOM 18 y Babel Standalone para ejecución universal directa sin servidor -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :focus-visible {
+      outline: 2px solid #3d6c3f !important;
+      outline-offset: 2px !important;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 antialiased font-sans selection:bg-robles-600 selection:text-white">
+  
+  <!-- Contenedor Raíz de React -->
+  <div id="root" class="h-full flex flex-col">
+    <!-- Indicador de carga inicial visible si tarda unos milisegundos en inicializar -->
+    <div class="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-6">
+      <div class="w-12 h-12 rounded-2xl bg-robles-600 flex items-center justify-center animate-pulse mb-4 text-white">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+      <h2 class="text-xl font-bold tracking-tight">Residencial Los Robles</h2>
+      <p class="text-xs text-slate-400 mt-1">Cargando Sistema Único de Información...</p>
+    </div>
+  </div>
+
+  <!-- APLICACIÓN REACT AUTOCONTENIDA (SPRINT 1 REVIEW) -->
+  <script type="text/babel">
+    const { useState, useEffect, useContext, createContext } = React;
+
+    // ========================================================
+    // 1. BASE DE DATOS LOCAL Y USUARIOS (HU-04)
+    // ========================================================
+    const USERS_DB = {
+      'colono@robles.com': {
+        password: 'colono123',
+        user: {
+          id: 'usr-colono-42',
+          nombre: 'Jorge Espinosa (Lote 42)',
+          email: 'colono@robles.com',
+          rol: 'Colono',
+          lote: 'Lote 42',
+          telefono: '55 4920 1823'
+        }
+      },
+      'admin@robles.com': {
+        password: 'admin123',
+        user: {
+          id: 'usr-admin-01',
+          nombre: 'Administración Central',
+          email: 'admin@robles.com',
+          rol: 'Admin',
+          lote: 'Oficina Administrativa',
+          telefono: '55 1200 8000'
+        }
+      }
+    };
+
+    const initialFinanzasData = {
+      resumen: {
+        saldoPendiente: 1500.00,
+        ultimoPago: {
+          monto: 1500.00,
+          fecha: '01/09/2026',
+          concepto: 'Mantenimiento Septiembre 2026',
+          folio: 'PAG-1024'
+        },
+        cuotaOrdinaria: {
+          monto: 1500.00,
+          periodo: 'Mensual',
+          diaLimite: 'Día 10 de cada mes'
+        }
+      },
+      movimientos: [
+        {
+          id: 'mov-1',
+          folio: 'CUO-2026-10',
+          concepto: 'Mantenimiento Ordinario Octubre 2026',
+          categoria: 'Mantenimiento',
+          fechaLimite: '10/10/2026',
+          fechaEmision: '01/10/2026',
+          monto: 1500.00,
+          estado: 'Pendiente',
+          comprobante: null,
+          comentarios: 'Incluye vigilancia 24/7, alumbrado y recolección de basura.'
+        },
+        {
+          id: 'mov-2',
+          folio: 'PAG-1025',
+          concepto: 'Cuota Extraordinaria: Reparación Portón Principal',
+          categoria: 'Seguridad',
+          fechaLimite: '15/09/2026',
+          fechaEmision: '01/09/2026',
+          monto: 450.00,
+          estado: 'En Revisión',
+          comprobante: {
+            nombre: 'transferencia_spei_450.pdf',
+            fechaSubida: '04/09/2026 14:32',
+            referencia: 'BBVA-908123',
+            nota: 'Pago transferido desde cuenta Banorte del Lote 42.'
+          },
+          comentarios: 'Revisión por comité de administración en menos de 24h hábiles.'
+        },
+        {
+          id: 'mov-3',
+          folio: 'PAG-1024',
+          concepto: 'Mantenimiento Ordinario Septiembre 2026',
+          categoria: 'Mantenimiento',
+          fechaLimite: '10/09/2026',
+          fechaEmision: '01/09/2026',
+          monto: 1500.00,
+          estado: 'Pagado',
+          comprobante: {
+            nombre: 'recibo_oficial_pag1024.pdf',
+            fechaSubida: '01/09/2026 10:15',
+            referencia: 'SPEI-771239',
+            nota: 'Validado por tesorería.'
+          },
+          comentarios: 'Pago cubierto en tiempo y forma con recibo fiscal emitido.'
+        },
+        {
+          id: 'mov-4',
+          folio: 'PAG-0982',
+          concepto: 'Tag de Acceso Vehicular Adicional (2 unidades)',
+          categoria: 'Acceso',
+          fechaLimite: '20/08/2026',
+          fechaEmision: '15/08/2026',
+          monto: 600.00,
+          estado: 'Pagado',
+          comprobante: {
+            nombre: 'comprobante_tags.jpg',
+            fechaSubida: '16/08/2026 18:40',
+            referencia: 'OX-331290',
+            nota: 'Entregados y programados en caseta de vigilancia.'
+          },
+          comentarios: 'Dispositivos activados para portón oriente y poniente.'
+        },
+        {
+          id: 'mov-5',
+          folio: 'PAG-0899',
+          concepto: 'Mantenimiento Ordinario Agosto 2026',
+          categoria: 'Mantenimiento',
+          fechaLimite: '10/08/2026',
+          fechaEmision: '01/08/2026',
+          monto: 1500.00,
+          estado: 'Pagado',
+          comprobante: {
+            nombre: 'recibo_agosto_pag0899.pdf',
+            fechaSubida: '02/08/2026 09:20',
+            referencia: 'SPEI-556102',
+            nota: 'Aprobado oportunamente.'
+          },
+          comentarios: 'Mantenimiento mensual sin adeudos pendientes.'
+        }
+      ]
+    };
+
+    // ========================================================
+    // 2. CONTEXTO DE AUTENTICACIÓN (HU-04 & AJUSTE TÉCNICO 1)
+    // ========================================================
+    const AuthContext = createContext();
+
+    function AuthProvider({ children }) {
+      const STORAGE_KEY = 'robles_auth_session_v1';
+      const [user, setUser] = useState(() => {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+          return null;
+        }
+      });
+      const [authError, setAuthError] = useState(null);
+
+      useEffect(() => {
+        try {
+          if (user) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        } catch (e) {}
+      }, [user]);
+
+      const login = (email, password) => {
+        setAuthError(null);
+        const norm = email.trim().toLowerCase();
+        const entry = USERS_DB[norm];
+        if (!entry) {
+          setAuthError('No existe una cuenta registrada con este correo electrónico.');
+          return false;
+        }
+        if (entry.password !== password) {
+          setAuthError('Contraseña incorrecta. Por favor verifica tus credenciales.');
+          return false;
+        }
+        setUser(entry.user);
+        return true;
+      };
+
+      const logout = () => {
+        setUser(null);
+        setAuthError(null);
+        localStorage.removeItem(STORAGE_KEY);
+      };
+
+      const toggleSimulatedRole = () => {
+        if (!user) return;
+        const target = user.rol === 'Colono' ? 'admin@robles.com' : 'colono@robles.com';
+        setUser(USERS_DB[target].user);
+      };
+
+      return (
+        <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), login, logout, authError, setAuthError, toggleSimulatedRole }}>
+          {children}
+        </AuthContext.Provider>
+      );
+    }
+
+    function useAuth() {
+      return useContext(AuthContext);
+    }
+
+    // ========================================================
+    // 3. VISTA DE LOGIN (HU-04)
+    // ========================================================
+    function LoginForm() {
+      const { login, authError, setAuthError } = useAuth();
+      const [email, setEmail] = useState('colono@robles.com');
+      const [password, setPassword] = useState('colono123');
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setTimeout(() => {
+          login(email, password);
+          setIsSubmitting(false);
+        }, 250);
+      };
+
+      const fillQuick = (tipo) => {
+        setAuthError(null);
+        if (tipo === 'colono') {
+          setEmail('colono@robles.com');
+          setPassword('colono123');
+        } else {
+          setEmail('admin@robles.com');
+          setPassword('admin123');
+        }
+      };
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-robles-950 to-slate-900 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+          <div className="w-full max-w-md">
+            
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-robles-700 to-robles-500 text-white shadow-xl shadow-robles-900/50 mb-4 border border-robles-400/30">
+                <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <h1 className="font-display text-3xl font-extrabold text-white tracking-tight">
+                Residencial <span className="text-robles-400">Los Robles</span>
+              </h1>
+              <p className="mt-1 text-sm text-slate-400 font-medium">
+                Sistema Único de Información • Sprint 1 Review
+              </p>
+            </div>
+
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-7 sm:p-9 shadow-2xl border border-white/20">
+              <div className="mb-6">
+                <h2 className="font-display text-xl font-bold text-slate-900">Iniciar Sesión</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Accede a tus estados de cuenta, comprobantes y votaciones</p>
+              </div>
+
+              {authError && (
+                <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="colono@robles.com"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-robles-600 focus:ring-2 focus:ring-robles-600/20 text-slate-800 text-sm outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-robles-600 focus:ring-2 focus:ring-robles-600/20 text-slate-800 text-sm outline-none transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-robles-700 to-robles-600 hover:from-robles-800 hover:to-robles-700 text-white font-bold text-sm shadow-lg shadow-robles-800/30 transition flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? 'Verificando...' : 'Ingresar al Portal'}
+                </button>
+              </form>
+
+              <div className="mt-7 pt-6 border-t border-slate-200">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center mb-3">
+                  Accesos Rápidos de Prueba (Sprint 1 Review)
+                </p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => fillQuick('colono')}
+                    className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-robles-50 hover:border-robles-300 transition text-left group"
+                  >
+                    <div className="text-[11px] font-bold text-slate-800 group-hover:text-robles-800">🏡 Rol: Colono</div>
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">colono@robles.com</div>
+                    <div className="text-[9px] text-robles-700 font-medium">Jorge Espinosa (L. 42)</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => fillQuick('admin')}
+                    className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition text-left group"
+                  >
+                    <div className="text-[11px] font-bold text-slate-800 group-hover:text-blue-800">🛡️ Rol: Admin</div>
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">admin@robles.com</div>
+                    <div className="text-[9px] text-blue-700 font-medium">Administración Central</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-slate-500 mt-6">
+              © 2026 Asociación de Colonos Residencial Los Robles A.C.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================
+    // 4. MODAL SUBIR COMPROBANTE (AJUSTE TÉCNICO 3)
+    // ========================================================
+    function SubirComprobanteModal({ isOpen, onClose, cuotasPendientes, cuotaPreseleccionada, onSubir }) {
+      const [selectedCuotaId, setSelectedCuotaId] = useState('');
+      const [fileName, setFileName] = useState('');
+      const [fileSize, setFileSize] = useState('');
+      const [referencia, setReferencia] = useState('');
+      const [nota, setNota] = useState('');
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [errorMsg, setErrorMsg] = useState('');
+
+      useEffect(() => {
+        if (cuotaPreseleccionada) {
+          setSelectedCuotaId(cuotaPreseleccionada.id);
+        } else if (cuotasPendientes.length > 0) {
+          setSelectedCuotaId(cuotasPendientes[0].id);
+        }
+      }, [cuotaPreseleccionada, cuotasPendientes, isOpen]);
+
+      if (!isOpen) return null;
+
+      const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setFileName(file.name);
+          setFileSize((file.size / (1024 * 1024)).toFixed(2) + ' MB');
+          setErrorMsg('');
+        }
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!selectedCuotaId) {
+          setErrorMsg('Selecciona una cuota a pagar.');
+          return;
+        }
+        if (!fileName) {
+          setErrorMsg('Por favor adjunta el archivo del comprobante.');
+          return;
+        }
+
+        setIsSubmitting(true);
+        setTimeout(() => {
+          onSubir({
+            cuotaId: selectedCuotaId,
+            nombreArchivo: fileName,
+            referencia: referencia || 'SPEI-' + Math.floor(100000 + Math.random() * 900000),
+            nota: nota || 'Comprobante reportado por el colono.'
+          });
+          setIsSubmitting(false);
+          onClose();
+        }, 400);
+      };
+
+      const cuotaSeleccionada = cuotasPendientes.find(c => c.id === selectedCuotaId);
+
+      return (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6" role="dialog">
+          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden relative">
+            <div className="px-6 py-5 bg-gradient-to-r from-robles-900 to-robles-800 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-robles-700/60 flex items-center justify-center text-robles-200">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-bold">Subir Comprobante de Pago</h3>
+                  <p className="text-xs text-robles-200">Validación bancaria en menos de 24h hábiles</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="p-1.5 rounded-lg text-robles-300 hover:text-white transition">✕</button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 sm:p-7 space-y-4">
+              {errorMsg && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
+                  {errorMsg}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Concepto / Cuota a Liquidar <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedCuotaId}
+                  onChange={(e) => setSelectedCuotaId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-robles-600 bg-slate-50/50 outline-none"
+                >
+                  {cuotasPendientes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.concepto} — ${c.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN ({c.estado})
+                    </option>
+                  ))}
+                </select>
+                {cuotaSeleccionada && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Monto: <strong className="text-slate-800">${cuotaSeleccionada.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN</strong> • Vence: {cuotaSeleccionada.fechaLimite}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Archivo del Comprobante <span className="text-rose-500">*</span>
+                </label>
+                <div className="border-2 border-dashed border-slate-300 hover:border-robles-500 bg-slate-50/60 rounded-2xl p-5 text-center relative">
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-robles-100 text-robles-700 flex items-center justify-center mb-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                    </div>
+                    {fileName ? (
+                      <div>
+                        <p className="text-xs font-bold text-robles-800">{fileName}</p>
+                        <p className="text-[11px] text-slate-500">{fileSize} • Archivo seleccionado</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-700">Arrastra tu comprobante o <span className="text-robles-700 font-bold">haz clic aquí</span></p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Formatos: PDF, JPG, PNG (Máx 10 MB)</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Clave de Rastreo o Folio Bancario
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: SPEI-892100"
+                  value={referencia}
+                  onChange={(e) => setReferencia(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-robles-600 bg-slate-50/50 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Nota o Comentario
+                </label>
+                <textarea
+                  rows="2"
+                  placeholder="Ej: Transferencia realizada desde cuenta titular..."
+                  value={nota}
+                  onChange={(e) => setNota(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-robles-600 bg-slate-50/50 outline-none"
+                ></textarea>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-robles-700 hover:bg-robles-800 text-white shadow-md transition"
+                >
+                  {isSubmitting ? 'Enviando...' : 'Enviar para Validación'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================
+    // 5. ESTADO DE CUENTA Y FINANZAS (HU-01, AJUSTES 2 Y 3)
+    // ========================================================
+    function EstadoBadge({ estado }) {
+      if (estado === 'Pagado') {
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            Pagado
+          </span>
+        );
+      }
+      if (estado === 'En Revisión') {
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+            En Revisión
+          </span>
+        );
+      }
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+          Pendiente
+        </span>
+      );
+    }
+
+    function EstadoCuenta() {
+      const { user } = useAuth();
+      const [finanzas, setFinanzas] = useState(initialFinanzasData);
+      const [modalOpen, setModalOpen] = useState(false);
+      const [cuotaParaSubir, setCuotaParaSubir] = useState(null);
+      const [filtroEstado, setFiltroEstado] = useState('todos');
+      const [toastMensaje, setToastMensaje] = useState(null);
+      const [comprobanteVerModal, setComprobanteVerModal] = useState(null);
+
+      const showToast = (msg) => {
+        setToastMensaje(msg);
+        setTimeout(() => setToastMensaje(null), 4000);
+      };
+
+      const handleComprobanteSubido = ({ cuotaId, nombreArchivo, referencia, nota }) => {
+        setFinanzas(prev => {
+          const updatedMovimientos = prev.movimientos.map(mov => {
+            if (mov.id === cuotaId) {
+              return {
+                ...mov,
+                estado: 'En Revisión',
+                comprobante: {
+                  nombre: nombreArchivo,
+                  fechaSubida: new Date().toLocaleDateString('es-MX') + ' ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+                  referencia,
+                  nota
+                }
+              };
+            }
+            return mov;
+          });
+          return { ...prev, movimientos: updatedMovimientos };
+        });
+        showToast('¡Comprobante adjuntado con éxito! El estado cambió a "En Revisión".');
+      };
+
+      const handleAprobarPagoAdmin = (movId) => {
+        setFinanzas(prev => {
+          let montoAprobado = 0;
+          let movAprobado = null;
+          const updatedMovimientos = prev.movimientos.map(mov => {
+            if (mov.id === movId) {
+              montoAprobado = mov.monto;
+              movAprobado = mov;
+              return { ...mov, estado: 'Pagado' };
+            }
+            return mov;
+          });
+
+          const nuevoSaldo = Math.max(0, prev.resumen.saldoPendiente - montoAprobado);
+
+          return {
+            ...prev,
+            resumen: {
+              ...prev.resumen,
+              saldoPendiente: nuevoSaldo,
+              ultimoPago: {
+                monto: movAprobado ? movAprobado.monto : prev.resumen.ultimoPago.monto,
+                fecha: new Date().toLocaleDateString('es-MX'),
+                concepto: movAprobado ? movAprobado.concepto : prev.resumen.ultimoPago.concepto,
+                folio: movAprobado ? movAprobado.folio : prev.resumen.ultimoPago.folio
+              }
+            },
+            movimientos: updatedMovimientos
+          };
+        });
+        showToast('Pago validado y aprobado exitosamente por la Administración.');
+      };
+
+      const movimientosFiltrados = finanzas.movimientos.filter(item => {
+        if (filtroEstado === 'todos') return true;
+        return item.estado.toLowerCase() === filtroEstado.toLowerCase();
+      });
+
+      const cuotasPendientesORevision = finanzas.movimientos.filter(m => m.estado !== 'Pagado');
+
+      return (
+        <div className="space-y-8">
+          {toastMensaje && (
+            <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3">
+              <span className="text-emerald-400 text-lg">✓</span>
+              <span className="text-xs sm:text-sm font-semibold">{toastMensaje}</span>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-robles-100 text-robles-800 text-xs font-bold uppercase tracking-wider mb-2">
+                <span>HU-01</span>
+                <span>•</span>
+                <span>Módulo Financiero</span>
+              </div>
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Estados de Cuenta y Cuotas
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Consulta tus cuotas ordinarias, saldos y reporta tus comprobantes bancarios en línea.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setCuotaParaSubir(null);
+                setModalOpen(true);
+              }}
+              className="px-5 py-3 rounded-2xl bg-robles-700 hover:bg-robles-800 text-white font-bold text-xs sm:text-sm shadow-lg shadow-robles-800/25 transition flex items-center justify-center gap-2 self-start sm:self-auto"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span>Subir Comprobante de Pago</span>
+            </button>
+          </div>
+
+          {/* PANEL RESUMEN DE SALDOS (HU-01) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Tarjeta 1: Saldo Pendiente */}
+            <div className={`p-6 rounded-3xl border transition-all ${
+              finanzas.resumen.saldoPendiente > 0 
+                ? 'bg-amber-50/70 border-amber-200 shadow-sm' 
+                : 'bg-emerald-50/70 border-emerald-200 shadow-sm'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Saldo Total Pendiente</span>
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                  finanzas.resumen.saldoPendiente > 0 ? 'bg-amber-200 text-amber-900' : 'bg-emerald-200 text-emerald-900'
+                }`}>
+                  {finanzas.resumen.saldoPendiente > 0 ? 'Adeudo Activo' : 'Al Corriente'}
+                </span>
+              </div>
+              <p className={`mt-3 font-display text-3xl sm:text-4xl font-extrabold tracking-tight ${
+                finanzas.resumen.saldoPendiente > 0 ? 'text-amber-800' : 'text-emerald-800'
+              }`}>
+                ${finanzas.resumen.saldoPendiente.toLocaleString('es-MX', { minimumFractionDigits: 2 })} <span className="text-sm font-medium">MXN</span>
+              </p>
+              <div className="mt-3 text-xs text-slate-600 flex items-center gap-1.5">
+                {finanzas.resumen.saldoPendiente > 0 ? (
+                  <>
+                    <span className="text-amber-600 font-bold">⚠️</span>
+                    <span>Liquida antes del día 10 para evitar recargos.</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-emerald-600 font-bold">✓</span>
+                    <span>Tu lote está completamente al corriente.</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Tarjeta 2: Último Pago */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Último Pago Registrado</span>
+                <span className="text-slate-400 text-xs font-mono">{finanzas.resumen.ultimoPago.folio}</span>
+              </div>
+              <p className="mt-3 font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                ${finanzas.resumen.ultimoPago.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })} <span className="text-sm font-medium text-slate-500">MXN</span>
+              </p>
+              <div className="mt-3 text-xs text-slate-600 flex items-center justify-between">
+                <span className="truncate max-w-[170px]">{finanzas.resumen.ultimoPago.concepto}</span>
+                <span className="font-semibold text-slate-800">{finanzas.resumen.ultimoPago.fecha}</span>
+              </div>
+            </div>
+
+            {/* Tarjeta 3: Cuota Ordinaria */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Cuota Ordinaria Mensual</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold uppercase">{finanzas.resumen.cuotaOrdinaria.periodo}</span>
+              </div>
+              <p className="mt-3 font-display text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                ${finanzas.resumen.cuotaOrdinaria.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })} <span className="text-sm font-medium text-slate-500">MXN</span>
+              </p>
+              <div className="mt-3 text-xs text-slate-600 flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-robles-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Límite de pago: <strong>{finanzas.resumen.cuotaOrdinaria.diaLimite}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* LISTADO DE MOVIMIENTOS RESPONSIVO (AJUSTE TÉCNICO 2) */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-display text-lg font-bold text-slate-900">Movimientos Financieros</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Tabla en monitores de escritorio y Tarjetas en móviles (&lt;640px)</p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-2xl self-start sm:self-auto text-xs font-semibold">
+                <button
+                  onClick={() => setFiltroEstado('todos')}
+                  className={`px-3 py-1.5 rounded-xl transition ${filtroEstado === 'todos' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'}`}
+                >
+                  Todos ({finanzas.movimientos.length})
+                </button>
+                <button
+                  onClick={() => setFiltroEstado('pendiente')}
+                  className={`px-3 py-1.5 rounded-xl transition ${filtroEstado === 'pendiente' ? 'bg-white text-amber-800 shadow-sm' : 'text-slate-600'}`}
+                >
+                  Pendientes
+                </button>
+                <button
+                  onClick={() => setFiltroEstado('en revisión')}
+                  className={`px-3 py-1.5 rounded-xl transition ${filtroEstado === 'en revisión' ? 'bg-white text-blue-800 shadow-sm' : 'text-slate-600'}`}
+                >
+                  En Revisión
+                </button>
+                <button
+                  onClick={() => setFiltroEstado('pagado')}
+                  className={`px-3 py-1.5 rounded-xl transition ${filtroEstado === 'pagado' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600'}`}
+                >
+                  Pagados
+                </button>
+              </div>
+            </div>
+
+            {/* VISTA 1: TABLA ESTILIZADA (>= 640px) */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                    <th className="py-3.5 px-6">Mes / Concepto</th>
+                    <th className="py-3.5 px-6">Vencimiento</th>
+                    <th className="py-3.5 px-6">Monto</th>
+                    <th className="py-3.5 px-6">Estado</th>
+                    <th className="py-3.5 px-6 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {movimientosFiltrados.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/70 transition">
+                      <td className="py-4 px-6">
+                        <div className="font-bold text-slate-900 leading-snug">{item.concepto}</div>
+                        <div className="text-xs text-slate-400 font-mono mt-0.5">{item.folio} • {item.categoria}</div>
+                      </td>
+                      <td className="py-4 px-6 text-slate-600 text-xs font-medium">{item.fechaLimite}</td>
+                      <td className="py-4 px-6 font-display font-extrabold text-slate-900">
+                        ${item.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })} <span className="text-xs font-normal text-slate-400">MXN</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <EstadoBadge estado={item.estado} />
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {item.estado === 'Pendiente' && (
+                            <button
+                              onClick={() => { setCuotaParaSubir(item); setModalOpen(true); }}
+                              className="px-3 py-1.5 rounded-xl bg-robles-50 hover:bg-robles-600 text-robles-700 hover:text-white border border-robles-200 font-bold text-xs transition"
+                            >
+                              Subir Pago
+                            </button>
+                          )}
+                          {item.comprobante && (
+                            <button
+                              onClick={() => setComprobanteVerModal(item)}
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition flex items-center gap-1"
+                            >
+                              <span>📄 Recibo</span>
+                            </button>
+                          )}
+                          {user?.rol === 'Admin' && item.estado === 'En Revisión' && (
+                            <button
+                              onClick={() => handleAprobarPagoAdmin(item.id)}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition"
+                            >
+                              Aprobar
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* VISTA 2: TARJETAS APILADAS (< 640px) */}
+            <div className="block sm:hidden divide-y divide-slate-100">
+              {movimientosFiltrados.map((item) => (
+                <div key={item.id} className="p-4 hover:bg-slate-50 transition space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] font-mono font-semibold text-slate-400 uppercase">{item.folio}</span>
+                      <h4 className="font-bold text-slate-900 text-sm leading-snug">{item.concepto}</h4>
+                    </div>
+                    <EstadoBadge estado={item.estado} />
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-50">
+                    <span className="text-slate-500">Límite: <strong className="text-slate-700">{item.fechaLimite}</strong></span>
+                    <span className="font-display font-extrabold text-base text-slate-900">
+                      ${item.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                    </span>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-2">
+                    {item.estado === 'Pendiente' && (
+                      <button
+                        onClick={() => { setCuotaParaSubir(item); setModalOpen(true); }}
+                        className="w-full py-2 rounded-xl bg-robles-700 text-white font-bold text-xs text-center shadow-sm"
+                      >
+                        Subir Comprobante
+                      </button>
+                    )}
+                    {item.comprobante && (
+                      <button
+                        onClick={() => setComprobanteVerModal(item)}
+                        className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs text-center"
+                      >
+                        Ver Recibo
+                      </button>
+                    )}
+                    {user?.rol === 'Admin' && item.estado === 'En Revisión' && (
+                      <button
+                        onClick={() => handleAprobarPagoAdmin(item.id)}
+                        className="flex-1 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs text-center"
+                      >
+                        Aprobar Pago
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <SubirComprobanteModal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            cuotasPendientes={cuotasPendientesORevision}
+            cuotaPreseleccionada={cuotaParaSubir}
+            onSubir={handleComprobanteSubido}
+          />
+
+          {comprobanteVerModal && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white max-w-md w-full rounded-3xl p-6 shadow-2xl border border-slate-200">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <h3 className="font-display font-bold text-lg text-slate-900">Detalle del Comprobante</h3>
+                  <button onClick={() => setComprobanteVerModal(null)} className="text-slate-400 p-1">✕</button>
+                </div>
+                <div className="mt-4 space-y-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 font-bold uppercase">Concepto:</span>
+                    <p className="font-semibold text-slate-800 text-sm mt-0.5">{comprobanteVerModal.concepto}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-bold uppercase">Archivo:</span>
+                    <p className="font-mono bg-slate-100 p-2 rounded-lg text-slate-700 mt-0.5 break-all">
+                      📄 {comprobanteVerModal.comprobante?.nombre}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-slate-400 font-bold uppercase">Fecha de Carga:</span>
+                      <p className="font-semibold text-slate-700 mt-0.5">{comprobanteVerModal.comprobante?.fechaSubida}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 font-bold uppercase">Folio de Rastreo:</span>
+                      <p className="font-mono font-bold text-robles-800 mt-0.5">{comprobanteVerModal.comprobante?.referencia}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-bold uppercase">Nota del Colono:</span>
+                    <p className="text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 mt-0.5 italic">
+                      "{comprobanteVerModal.comprobante?.nota || 'Sin observaciones'}"
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button onClick={() => setComprobanteVerModal(null)} className="px-4 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold">
+                    Cerrar Detalle
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========================================================
+    // 6. MÓDULO DE VOTACIONES (HU-02)
+    // ========================================================
+    function Votaciones() {
+      const { user } = useAuth();
+      const [votoEmitido, setVotoEmitido] = useState(false);
+      const [votoSeleccionado, setVotoSeleccionado] = useState(null);
+      const [consultas, setConsultas] = useState([
+        {
+          id: 1,
+          titulo: '¿Aprobar presupuesto para instalación de paneles solares en la casa club?',
+          descripcion: 'Propuesta de inversión comunitaria para reducir el costo eléctrico de áreas comunes en un 40%.',
+          vigencia: '15/Octubre/2026',
+          totalVotos: 38
+        }
+      ]);
+      const [nuevaConsulta, setNuevaConsulta] = useState('');
+
+      const handleCrear = (e) => {
+        e.preventDefault();
+        if (!nuevaConsulta.trim()) return;
+        setConsultas(prev => [
+          ...prev,
+          {
+            id: Date.now(),
+            titulo: nuevaConsulta,
+            descripcion: 'Consulta vecinal abierta convocada por la Administración.',
+            vigencia: '30/Octubre/2026',
+            totalVotos: 0
+          }
+        ]);
+        setNuevaConsulta('');
+      };
+
+      return (
+        <div className="space-y-6">
+          <div className="pb-2 border-b border-slate-200">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider mb-2">
+              <span>HU-02</span>
+              <span>•</span>
+              <span>Votaciones Digitales</span>
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Democracia Vecinal Abierta
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Toma de decisiones vecinales con la regla condominal de 1 voto por lote/inmueble.
+            </p>
+          </div>
+
+          {consultas.map((c) => (
+            <div key={c.id} className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                  Consulta Activa hasta {c.vigencia}
+                </span>
+                <span className="text-xs text-slate-400 font-medium">
+                  Votos registrados: <strong className="text-slate-700">{c.totalVotos + (votoEmitido ? 1 : 0)}</strong>
+                </span>
+              </div>
+
+              <h3 className="font-display text-lg sm:text-xl font-bold text-slate-900">{c.titulo}</h3>
+              <p className="mt-2 text-sm text-slate-600 leading-relaxed">{c.descripcion}</p>
+
+              <div className="mt-6 pt-5 border-t border-slate-100">
+                {!votoEmitido ? (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      Emite tu voto asignado al: <span className="text-slate-800 font-bold">{user?.lote}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => { setVotoSeleccionado('A Favor'); setVotoEmitido(true); }}
+                        className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition"
+                      >
+                        👍 A Favor
+                      </button>
+                      <button
+                        onClick={() => { setVotoSeleccionado('En Contra'); setVotoEmitido(true); }}
+                        className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-sm transition"
+                      >
+                        👎 En Contra
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-900 text-sm">
+                    <span className="text-xl">✓</span>
+                    <div>
+                      <p className="font-bold">Tu voto ({votoSeleccionado}) ha sido registrado exitosamente.</p>
+                      <p className="text-xs text-emerald-700 mt-0.5">Asignado formalmente al {user?.lote}. Gracias por participar.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {user?.rol === 'Admin' && (
+            <div className="bg-white rounded-3xl border-2 border-blue-200 p-6 sm:p-7 shadow-sm">
+              <h3 className="font-display text-base font-bold text-slate-900 mb-1">
+                Panel Administrativo: Convocar Nueva Consulta
+              </h3>
+              <p className="text-xs text-slate-500 mb-4">Como Administrador puedes publicar temas de interés condominal.</p>
+              <form onSubmit={handleCrear} className="space-y-3">
+                <input
+                  type="text"
+                  value={nuevaConsulta}
+                  onChange={(e) => setNuevaConsulta(e.target.value)}
+                  placeholder="Ej: Modificación del horario de áreas comunes..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none"
+                />
+                <button type="submit" className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold">
+                  Publicar Votación
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========================================================
+    // 7. MÓDULO DE INCIDENCIAS (HU-03)
+    // ========================================================
+    function Incidencias() {
+      const [reportes, setReportes] = useState([
+        { id: 'INC-801', tipo: 'Alumbrado', desc: 'Luminaria apagada en Calle Roble #4 cerca de área verde.', estatus: 'En Proceso', fecha: '02/10/2026' },
+        { id: 'INC-798', tipo: 'Seguridad / Portón', desc: 'Sensor de cierre automático con retraso intermitente.', estatus: 'Resuelto', fecha: '28/09/2026' }
+      ]);
+      const [tipo, setTipo] = useState('Mantenimiento General');
+      const [desc, setDesc] = useState('');
+      const [enviado, setEnviado] = useState(false);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!desc.trim()) return;
+        const nuevo = {
+          id: 'INC-' + Math.floor(802 + Math.random() * 50),
+          tipo,
+          desc,
+          estatus: 'Recibido',
+          fecha: new Date().toLocaleDateString('es-MX')
+        };
+        setReportes([nuevo, ...reportes]);
+        setDesc('');
+        setEnviado(true);
+        setTimeout(() => setEnviado(false), 4000);
+      };
+
+      return (
+        <div className="space-y-8">
+          <div className="pb-2 border-b border-slate-200">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider mb-2">
+              <span>HU-03</span>
+              <span>•</span>
+              <span>Reportes Comunitarios</span>
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Incidencias y Reportes
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">Reporta anomalías en áreas comunes o emergencias con seguimiento en tiempo real.</p>
+          </div>
+
+          {enviado && (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-sm font-semibold flex items-center gap-2">
+              <span>✓</span>
+              <span>Reporte registrado exitosamente. Se ha notificado al personal de mantenimiento.</span>
+            </div>
+          )}
+
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Levantar Nuevo Reporte de Falla</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Tipo de Incidencia</label>
+                  <select
+                    value={tipo}
+                    onChange={(e) => setTipo(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none bg-slate-50/50"
+                  >
+                    <option>Mantenimiento General</option>
+                    <option>Seguridad / Portón</option>
+                    <option>Jardinería / Áreas Verdes</option>
+                    <option>Alumbrado Público</option>
+                    <option>Fuga de Agua / Fontanería</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Evidencia Fotográfica</label>
+                  <input type="file" className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-robles-50 file:text-robles-700" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Descripción</label>
+                <textarea
+                  required
+                  rows="3"
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                  placeholder="Describe la ubicación exacta y el desperfecto..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none bg-slate-50/50"
+                ></textarea>
+              </div>
+
+              <button type="submit" className="px-6 py-2.5 rounded-xl bg-robles-700 text-white font-bold text-xs shadow-md">
+                Enviar Reporte
+              </button>
+            </form>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-200 font-bold text-slate-900">Historial de Incidencias</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-[11px] font-bold uppercase text-slate-500 border-b border-slate-200">
+                    <th className="py-3 px-5">Folio</th>
+                    <th className="py-3 px-5">Tipo</th>
+                    <th className="py-3 px-5">Descripción</th>
+                    <th className="py-3 px-5">Fecha</th>
+                    <th className="py-3 px-5 text-right">Estatus</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {reportes.map((r) => (
+                    <tr key={r.id}>
+                      <td className="py-3.5 px-5 font-mono font-bold text-xs">{r.id}</td>
+                      <td className="py-3.5 px-5 font-medium">{r.tipo}</td>
+                      <td className="py-3.5 px-5 text-slate-600 text-xs">{r.desc}</td>
+                      <td className="py-3.5 px-5 text-slate-500 text-xs">{r.fecha}</td>
+                      <td className="py-3.5 px-5 text-right">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">{r.estatus}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================
+    // 8. LAYOUT Y NAVBAR (HU-05)
+    // ========================================================
+    function Navbar({ activeTab, setActiveTab }) {
+      const { user, logout, toggleSimulatedRole } = useAuth();
+      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+      const navLinks = [
+        { id: 'finanzas', label: 'Mis Finanzas (HU-01)', icon: '💳' },
+        { id: 'votaciones', label: 'Votaciones (HU-02)', icon: '🗳️' },
+        { id: 'incidencias', label: 'Incidencias (HU-03)', icon: '🛠️' },
+      ];
+
+      return (
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16 sm:h-20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-robles-800 to-robles-600 flex items-center justify-center text-white shadow-md">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-display font-extrabold text-lg sm:text-xl text-slate-900 flex items-center gap-1.5">
+                    <span>Residencial</span>
+                    <span className="text-robles-700">Los Robles</span>
+                  </div>
+                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider hidden sm:block">
+                    Sistema Único de Información
+                  </p>
+                </div>
+              </div>
+
+              <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80">
+                {navLinks.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+                      activeTab === tab.id ? 'bg-white text-robles-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <span>{tab.icon}</span> <span className="ml-1.5">{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="hidden lg:flex items-center gap-3">
+                <button
+                  onClick={toggleSimulatedRole}
+                  className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+                  title="Cambiar entre Colono y Admin"
+                >
+                  <span>🔄 Probar Rol:</span> <strong className="text-slate-800">{user.rol === 'Colono' ? 'Admin' : 'Colono'}</strong>
+                </button>
+
+                <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+                  <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center font-bold text-xs text-slate-700">
+                    {user?.rol === 'Admin' ? 'AD' : 'JE'}
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span className="truncate max-w-[130px]">{user?.nombre}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                        user?.rol === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {user?.rol}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-medium">{user?.lote}</div>
+                  </div>
+                </div>
+
+                <button onClick={logout} className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition" title="Cerrar sesión">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="flex lg:hidden items-center gap-2">
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2.5 rounded-xl text-slate-600 hover:bg-slate-100"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {mobileMenuOpen && (
+            <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-4 shadow-xl">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-slate-900">{user?.nombre}</div>
+                  <div className="text-[11px] text-slate-500">{user?.lote} • Rol: <span className="font-semibold text-robles-700">{user?.rol}</span></div>
+                </div>
+                <button onClick={toggleSimulatedRole} className="text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-300 font-semibold text-slate-700">
+                  Cambiar Rol
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                {navLinks.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-left transition ${
+                      activeTab === tab.id ? 'bg-robles-50 text-robles-800 border border-robles-200' : 'text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span>{tab.icon}</span> <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-slate-200">
+                <button onClick={logout} className="w-full py-2.5 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 text-center">
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          )}
+        </header>
+      );
+    }
+
+    function DashboardLayout({ activeTab, setActiveTab, children }) {
+      const { user } = useAuth();
+
+      const navigationItems = [
+        { id: 'finanzas', name: 'Mis Finanzas', badge: 'HU-01', icon: '💳', description: 'Estados de cuenta y comprobantes' },
+        { id: 'votaciones', name: 'Votaciones', badge: 'HU-02', icon: '🗳️', description: '1 voto por lote/inmueble' },
+        { id: 'incidencias', name: 'Incidencias', badge: 'HU-03', icon: '🛠️', description: 'Fallas comunes y reportes' }
+      ];
+
+      return (
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+          <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col md:flex-row gap-8">
+            <aside className="hidden md:block w-64 lg:w-72 flex-shrink-0">
+              <div className="sticky top-28 space-y-6">
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-robles-800 to-robles-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                      {user?.rol === 'Admin' ? 'AD' : 'JE'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-sm text-slate-900 truncate">{user?.nombre}</h3>
+                      <p className="text-xs text-slate-500 font-medium">{user?.lote}</p>
+                      <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        user?.rol === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        Rol {user?.rol}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <nav className="p-3 bg-white rounded-3xl border border-slate-200/90 shadow-sm space-y-1.5">
+                  <p className="px-3 pt-2 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Módulos del Sistema
+                  </p>
+                  {navigationItems.map((item) => {
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`w-full text-left p-3 rounded-2xl transition flex items-start gap-3 ${
+                          isActive ? 'bg-robles-50 text-robles-900 font-bold border border-robles-200/80 shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="text-lg">{item.icon}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold">{item.name}</span>
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">{item.badge}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 font-normal truncate mt-0.5">{item.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </nav>
+
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 text-white text-xs">
+                  <div className="text-robles-400 font-bold mb-1">Caseta de Vigilancia 24/7</div>
+                  <p className="text-slate-300 text-[11px]">Emergencias o accesos: <br /><strong className="text-white">Ext. 101 • 55 1200 8099</strong></p>
+                </div>
+              </div>
+            </aside>
+
+            <main className="flex-1 min-w-0">
+              {children}
+            </main>
+          </div>
+
+          <footer className="mt-auto bg-white border-t border-slate-200 py-6 text-xs text-slate-500 text-center">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <p>© 2026 Residencial Los Robles • Sistema Único de Información (Sprint 1 Review)</p>
+              <p className="text-slate-400">Diseño Responsivo Mobile-First • React + Tailwind CSS</p>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    // ========================================================
+    // 9. APLICACIÓN PRINCIPAL
+    // ========================================================
+    function MainApp() {
+      const { isAuthenticated } = useAuth();
+      const [activeTab, setActiveTab] = useState('finanzas');
+
+      if (!isAuthenticated) {
+        return <LoginForm />;
+      }
+
+      return (
+        <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+          {activeTab === 'finanzas' && <EstadoCuenta />}
+          {activeTab === 'votaciones' && <Votaciones />}
+          {activeTab === 'incidencias' && <Incidencias />}
+        </DashboardLayout>
+      );
+    }
+
+    function App() {
+      return (
+        <AuthProvider>
+          <MainApp />
+        </AuthProvider>
+      );
+    }
+
+    // Montar la aplicación en el DOM
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
 </html>
